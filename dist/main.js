@@ -91,9 +91,9 @@
   !*** ./src/css/style.less ***!
   \****************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-eval("const tag = document.createElement('style');\n    tag.innerHTML = \"body #app {\\n  height: 200px;\\n  background: url('../images/logo.jpg') 0 0 no-repeat;\\n  background-size: contain;\\n}\\nbody #test {\\n  display: -webkit-box;\\n  display: -ms-flexbox;\\n  display: flex;\\n}\\n\";\n    document.head.appendChild(tag);\n\n//# sourceURL=webpack:///./src/css/style.less?");
+eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./src/css/style.less?");
 
 /***/ }),
 
