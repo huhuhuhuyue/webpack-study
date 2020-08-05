@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
-    "server": "webpack-dev-server"
+    "server": "webpack-dev-server",
+    "mpa": "webpack --config ./mpa.config.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "css-loader": "^4.2.0",
     "express": "^4.17.1",
     "file-loader": "^6.0.0",
+    "glob": "^7.1.6",
     "html-webpack-plugin": "^4.3.0",
     "less": "^3.12.2",
     "less-loader": "^6.2.0",
