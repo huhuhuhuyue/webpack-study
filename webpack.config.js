@@ -1,6 +1,8 @@
 const path = require('path')
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin") // 把css打包成一个单独的css文件，而不是以style标签的形式插入到head
+const {CleanWebpackPlugin} = require("clean-webpack-plugin") // 每次打包前自动删除上一次打包出来的文件
+const webpack = require("webpack")
 module.exports = {
     entry: {
         main: './src/index.js',
@@ -10,9 +12,10 @@ module.exports = {
         filename: '[name]-[hash:6].js' // 给打包后的文件名加上6位数的hash："[name]-[hash:6].js"或者"[name].js?[hash:6]"
     },
     mode: "development",
-    resolveLoader: {
-        modules: ["./node_modules", "./myLoader"] // 告诉webpack去哪找loader，默认是"node_modules"，再加一个"myLoader"
-    },
+    devtool: "inline-source-map", // 将错误信息定位到源码，参考：https://www.webpackjs.com/configuration/devtool/
+    // resolveLoader: {
+    //     modules: ["./node_modules", "./myLoader"] // 告诉webpack去哪找loader，默认是"node_modules"，再加一个"myLoader"
+    // },
     module: {
         rules: [
             {
@@ -23,13 +26,14 @@ module.exports = {
             },
             {
                 test: /\.less$/,
-                use: [{
-                  loader: MiniCssExtractPlugin.loader,
-                  options: {
-                    publicPath: "../" // 如果不配置publicPath，less文件引入的css默认指向css/image下
-                  }
-                }, 'css-loader', 'postcss-loader', 'less-loader']
+                // use: [{
+                //   loader: MiniCssExtractPlugin.loader,
+                //   options: {
+                //     publicPath: "../" // 如果不配置publicPath，less文件引入的css默认指向css/image下
+                //   }
+                // }, 'css-loader', 'postcss-loader', 'less-loader']
                 // use: ['kstyle-loader', 'kcss-loader', 'postcss-loader', 'kless-loader']
+                use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
                 // 使用postcss需要在根目录下额外配置postcss.config.js
                 // 使用less需按照less-loader、less两个依赖。less负责把less语法转为css；less-loader负责less和webpack之间的通讯
                 // css-loader把css放到chunks中
@@ -46,8 +50,8 @@ module.exports = {
                     }
                 }
             },
-            {
-                test: /\.js/,
+            // {
+                // test: /\.js/,
                 // 使用自己写的loader
                 // 无需传参
                 // use: path.resolve(__dirname, './myLoader/replaceLoader.js')
@@ -59,34 +63,48 @@ module.exports = {
                 //     }
                 // }
                 // 需要给loader传入参数，并且需要配置多个loader，由于loader有执行顺序，所有同步loder放在异步loader前面
-                use: [
-                    {
-                        // loader: path.resolve(__dirname, './myLoader/replaceLoader.js'), // 如果想像别的loader一样写loader名称，需要使用resolveLoader
-                        loader: "replaceLoader",
-                        options: {
-                            text: '你好'
-                        }
-                    },
-                    {
-                        loader: path.resolve(__dirname, './myLoader/replaceLoaderAsync.js'),
-                        options: {
-                            name: 'kkb'
-                        }
-                    }
-                ]
-            }
+                // use: [
+                //     {
+                //         // loader: path.resolve(__dirname, './myLoader/replaceLoader.js'), // 如果想像别的loader一样写loader名称，需要使用resolveLoader
+                //         loader: "replaceLoader",
+                //         options: {
+                //             text: '你好'
+                //         }
+                //     },
+                //     {
+                //         loader: path.resolve(__dirname, './myLoader/replaceLoaderAsync.js'),
+                //         options: {
+                //             name: 'kkb'
+                //         }
+                //     }
+                // ]
+            // }
         ]
+    },
+    devServer: {
+      contentBase: './dist', // 把哪个目录指定为静态目录，默认为dist/index.html，如果打包出去的html文件不叫index，则不能默认指向xxx.html
+      port: 8081, // 端口
+      open: true, // 自动打开浏览器的窗口
+      hot: true, // 开启hmr（HotModuleReplacementPlugin）的开关
+      proxy: {
+        "/api": {
+          target: "http://localhost:9092"
+        }
+      },
+      hotOnly: true // 不自动刷新浏览器
     },
     plugins: [
         new HtmlWebpackPlugin({ // new HtmlWebpackPlugin可以有多个
             title: 'hello',
             template: "./src/app.html", // 以哪个html为模板
-            filename: "app.html", // 生成的html的文件名
+            filename: "index.html", // 生成的html的文件名
             inject: 'body'
         }),
-        new MiniCssExtractPlugin({
-          filename: "css/[name].css" // 打包出来的文件在css目录下，名字还叫原来的名字
-        }) // 要把style-loader换成MiniCssExtractPlugin.loader
+        // new MiniCssExtractPlugin({
+        //   filename: "css/[name].css" // 打包出来的文件在css目录下，名字还叫原来的名字
+        // }), // 要把style-loader换成MiniCssExtractPlugin.loader
+        new CleanWebpackPlugin(), // 打包时删除上次打包的文件
+        new webpack.HotModuleReplacementPlugin() // 热更新
     ]
 }
 
@@ -102,4 +120,6 @@ module.exports = {
 
  * js文件推荐使用chunkhash
  * css文件推荐使用contenthash
+ * 
+ * 如果使用了HotModuleReplacementPlugin的话就不支持chunkhash、contenthash，只能使用hash
 */
