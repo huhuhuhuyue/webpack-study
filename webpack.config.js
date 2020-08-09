@@ -2,6 +2,9 @@ const path = require('path')
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin") // 把css打包成一个单独的css文件，而不是以style标签的形式插入到head
 const {CleanWebpackPlugin} = require("clean-webpack-plugin") // 每次打包前自动删除上一次打包出来的文件
+const TextWebpackPlugin = require("./myPlugins/text-webpack-plugin.js")
+const PurifyCSS = require('purifycss-webpack')
+const glob = require('glob-all')
 const webpack = require("webpack")
 module.exports = {
     entry: {
@@ -11,7 +14,7 @@ module.exports = {
         path: path.resolve(__dirname, './dist'),
         filename: '[name]-[hash:6].js' // 给打包后的文件名加上6位数的hash："[name]-[hash:6].js"或者"[name].js?[hash:6]"
     },
-    mode: "development",
+    // mode: "development",
     devtool: "inline-source-map", // 将错误信息定位到源码，参考：https://www.webpackjs.com/configuration/devtool/
     // resolveLoader: {
     //     modules: ["./node_modules", "./myLoader"] // 告诉webpack去哪找loader，默认是"node_modules"，再加一个"myLoader"
@@ -20,7 +23,8 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
+                use: [MiniCssExtractPlugin.loader, 'css-loader'] 
+                // use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
                 // css-loader把css放到chunks中
                 // style-loader动态生成style标签，并插入到html的header中
             },
@@ -50,6 +54,31 @@ module.exports = {
                     }
                 }
             },
+            {
+                test: /\.js/,
+                use: {
+                    loader: 'babel-loader', // 负责babael/core和webpack的沟通
+                    // options: { // 将options提取到.babelrc中，这部分就能去掉了
+                    //     // presets: ['@babel/preset-env'] // 只能做es6基本语法转换，es6+的无法转换，如promise
+                    //     presets: [
+                    //         [
+                    //             "@babel/preset-env",
+                    //             {
+                    //                 targets: { // 目标浏览器设置
+                    //                     edge: "17",
+                    //                     firefox: "60",
+                    //                     chrome: "67", // 兼容到谷歌67版本
+                    //                     safari: "11.1"
+                    //                 },
+                    //                 corejs: 2,//新版本需要指定核⼼库版本
+                    //                 useBuiltIns: "entry"//按需注⼊
+                    //             }
+                    //         ]
+                    //     ]
+                    // }
+                }
+
+            }
             // {
                 // test: /\.js/,
                 // 使用自己写的loader
@@ -93,6 +122,9 @@ module.exports = {
       },
       hotOnly: true // 不自动刷新浏览器
     },
+    optimization: {
+        usedExports: true
+    },
     plugins: [
         new HtmlWebpackPlugin({ // new HtmlWebpackPlugin可以有多个
             title: 'hello',
@@ -100,11 +132,23 @@ module.exports = {
             filename: "index.html", // 生成的html的文件名
             inject: 'body'
         }),
-        // new MiniCssExtractPlugin({
-        //   filename: "css/[name].css" // 打包出来的文件在css目录下，名字还叫原来的名字
-        // }), // 要把style-loader换成MiniCssExtractPlugin.loader
+        new MiniCssExtractPlugin({
+          filename: "css/[name].css" // 打包出来的文件在css目录下，名字还叫原来的名字
+        }), // 要把style-loader换成MiniCssExtractPlugin.loader
         new CleanWebpackPlugin(), // 打包时删除上次打包的文件
-        new webpack.HotModuleReplacementPlugin() // 热更新
+        new webpack.HotModuleReplacementPlugin(), // 热更新
+        // new TextWebpackPlugin({
+        //     name: '自定义plugin'
+        // }),
+        new PurifyCSS({ // 清除⽆⽤ css
+            paths: glob.sync( // 摇树范围：引入css的js和html
+                [
+                    // 要做 CSS Tree Shaking 的路径⽂件，摇树不支持style-loader，要使用MiniCssExtractPlugin.loader
+                    path.resolve(__dirname, './src/*.html'), // src下的所有html
+                    path.resolve(__dirname, './src/*.js')
+                ]
+            )
+        })
     ]
 }
 
