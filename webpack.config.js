@@ -123,7 +123,7 @@ module.exports = {
       hotOnly: true // 不自动刷新浏览器
     },
     optimization: {
-        usedExports: true
+        usedExports: true // js摇树
     },
     plugins: [
         new HtmlWebpackPlugin({ // new HtmlWebpackPlugin可以有多个

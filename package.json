@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "sideEffect": [
+    "*.css",
+    "@babel/polyfil"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "server": "webpack-dev-server",
-    "mpa": "webpack --config ./mpa.config.js"
+    "mpa": "webpack --config ./mpa.config.js",
+    "baseAndDev": "webpack-dev-server --config ./webpack.dev.js",
+    "baseAndPro": "webpack --config ./webpack.pro.js"
   },
   "keywords": [],
   "author": "",
@@ -33,10 +39,12 @@
     "style-loader": "^1.2.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.1.1"
   },
   "dependencies": {
     "@babel/polyfill": "^7.10.4",
+    "core-js": "^2.6.11",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }

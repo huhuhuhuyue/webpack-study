@@ -9,7 +9,8 @@
           "chrome": "67",
           "safari": "11.1",
           "android":"6.0"
-           },
+        },
+        "corejs": "3",
         "useBuiltIns": "usage" //按需注⼊
       }
     ],
